@@ -831,7 +831,7 @@ interface ConnectionOptions {
   /**
    * A boolean determining whether BulkLoad parameters should be validated.
    *
-   * (default: `false`).
+   * (default: `true`).
    */
   validateBulkLoadParameters?: boolean;
 
