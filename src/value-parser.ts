@@ -6,6 +6,7 @@ import { TYPE } from './data-type';
 import iconv from 'iconv-lite';
 import { sprintf } from 'sprintf-js';
 import { bufferToLowerCaseGuid, bufferToUpperCaseGuid } from './guid-parser';
+import Decimal from 'decimal.js';
 
 const NULL = (1 << 16) - 1;
 const MAX = (1 << 16) - 1;
@@ -14,6 +15,8 @@ const MONEY_DIVISOR = 10000;
 const PLP_NULL = Buffer.from([0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
 const UNKNOWN_PLP_LEN = Buffer.from([0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]);
 const DEFAULT_ENCODING = 'utf8';
+
+const decimals: {[precision: string]: typeof Decimal} = {};
 
 function readTinyInt(parser: Parser, callback: (value: unknown) => void) {
   parser.readUInt8(callback);
@@ -363,19 +366,25 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
 
     let readValue;
     if (dataLength === 5) {
-      readValue = parser.readUInt32LE;
+      readValue = parser.readUInt32LEBI;
     } else if (dataLength === 9) {
-      readValue = parser.readUNumeric64LE;
+      readValue = parser.readUNumeric64LEBI;
     } else if (dataLength === 13) {
-      readValue = parser.readUNumeric96LE;
+      readValue = parser.readUNumeric96LEBI;
     } else if (dataLength === 17) {
-      readValue = parser.readUNumeric128LE;
+      readValue = parser.readUNumeric128LEBI;
     } else {
       return parser.emit('error', new Error(sprintf('Unsupported numeric dataLength %d', dataLength)));
     }
 
     readValue.call(parser, (value) => {
-      callback((value * sign) / Math.pow(10, scale));
+      let constr = decimals[_precision];
+      if (!constr) {
+        constr = Decimal.clone({ precision: _precision });
+        decimals[_precision] = constr;
+      }
+      const decimal = new constr(value.toString()).mul(sign).div(Math.pow(10, scale));
+      callback(decimal.toFixed(_precision));
     });
   });
 }

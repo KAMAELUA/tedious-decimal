@@ -44,6 +44,7 @@
     "@js-joda/core": "^3.2.0",
     "adal-node": "^0.2.1",
     "bl": "^4.0.3",
+    "decimal.js": "^10.2.1",
     "depd": "^2.0.0",
     "iconv-lite": "^0.6.2",
     "jsbi": "^3.1.4",
