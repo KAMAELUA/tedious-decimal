@@ -362,35 +362,30 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
   parser.readUInt8((sign) => {
     sign = sign === 1 ? 1 : -1;
 
-    if (options.returnDecimalAndNumericAsString) {
-      return parser.readBuffer(dataLength - 1, (buffer) => {
-        let value = convertLEBytesToString(buffer);
-        if (scale > 0) {
-          value = value.padStart(scale + 1, '0');
-          const idx = value.length - scale;
-          value = value.slice(0, idx) + '.' + value.slice(idx);
-        }
-        if (sign === -1) value = '-' + value;
-        callback(value);
-      });
+    let readValue;
+    if (dataLength === 5) {
+      readValue = parser.readUInt32LE;
+    } else if (dataLength === 9) {
+      readValue = parser.readUNumeric64LE;
+    } else if (dataLength === 13) {
+      readValue = parser.readUNumeric96LE;
+    } else if (dataLength === 17) {
+      readValue = parser.readUNumeric128LE;
     } else {
-      let readValue;
-      if (dataLength === 5) {
-        readValue = parser.readUInt32LE;
-      } else if (dataLength === 9) {
-        readValue = parser.readUNumeric64LE;
-      } else if (dataLength === 13) {
-        readValue = parser.readUNumeric96LE;
-      } else if (dataLength === 17) {
-        readValue = parser.readUNumeric128LE;
-      } else {
-        throw new Error(sprintf('Unsupported numeric dataLength %d', dataLength));
-      }
-
-      readValue.call(parser, (value) => {
-        callback((value * sign) / Math.pow(10, scale));
-      });
+      throw new Error(sprintf('Unsupported numeric dataLength %d', dataLength));
     }
+
+    readValue.call(parser, (value) => {
+      if (parser.options.returnDecimalAndNumericAsString) {
+        let stringVal = value.toString().padStart(scale + 1, '0');
+        const idx = stringVal.length - scale;
+        stringVal = stringVal.slice(0, idx) + '.' + stringVal.slice(idx);
+        if (sign === -1) stringVal = '-' + stringVal;
+        callback(stringVal);
+      } else {
+        callback((Number(value) * sign) / Math.pow(10, scale));
+      }
+    });
   });
 }
 

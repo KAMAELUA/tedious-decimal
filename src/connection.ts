@@ -368,7 +368,7 @@ export interface InternalConnectionOptions {
   useUTC: boolean;
   workstationId: undefined | string;
   lowerCaseGuids: boolean;
-  returnDecimalAndNumericAsString: boolean;
+  returnDecimalAndNumericAsString?: boolean;
 }
 
 interface KeyStoreProviderMap {
@@ -1232,7 +1232,7 @@ class Connection extends EventEmitter {
         useColumnNames: false,
         useUTC: true,
         workstationId: undefined,
-        lowerCaseGuids: false
+        lowerCaseGuids: false,
       }
     };
 
@@ -1653,6 +1653,14 @@ class Connection extends EventEmitter {
         }
 
         this.config.options.lowerCaseGuids = config.options.lowerCaseGuids;
+      }
+
+      if (config.options?.returnDecimalAndNumericAsString !== undefined) {
+        if (typeof config.options.returnDecimalAndNumericAsString !== 'boolean') {
+          throw new TypeError('The "config.options.returnDecimalAndNumericAsString" property must be of type boolean.');
+        }
+
+        this.config.options.returnDecimalAndNumericAsString = config.options.returnDecimalAndNumericAsString;
       }
     }
 

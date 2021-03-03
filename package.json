@@ -28,7 +28,7 @@
   "homepage": "https://github.com/KAMAELUA/tedious",
   "bugs": "https://github.com/KAMAELUA/tedious/issues",
   "license": "MIT",
-  "version": "11.0.9-dev.1",
+  "version": "14.0.0-dev.1",
   "main": "./lib/tedious.js",
   "repository": {
     "type": "git",
@@ -94,7 +94,8 @@
     "test-integration": "mocha test/integration/",
     "test-all": "mocha test/unit/ test/unit/token/ test/unit/tracking-buffer test/integration/",
     "build": "rimraf lib && babel src --out-dir lib --extensions .js,.ts",
-    "prepublish": "npm run build && tsc && xcopy temp\\src\\*.d.ts lib /s && xcopy src\\errors.d.ts lib /s && rimraf temp",
+    "prepublish": "npm run build && tsc && xcopy temp\\src\\*.d.ts lib /s && rimraf temp",
+    "newprepublish": "npm run build",
     "semantic-release": "semantic-release"
   },
   "babel": {

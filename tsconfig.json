@@ -10,10 +10,10 @@
     "allowSyntheticDefaultImports": true,
     "lib": [ "esnext" ],
     "skipLibCheck": true,
-    "declaration": true,
-    "outDir": "temp",
     "resolveJsonModule": true,
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "declaration": true,
+    "outDir": "temp"
   },
   "include": [
     "src/**/*.ts",
