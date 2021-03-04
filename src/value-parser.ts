@@ -7,6 +7,7 @@ import iconv from 'iconv-lite';
 import { sprintf } from 'sprintf-js';
 import { bufferToLowerCaseGuid, bufferToUpperCaseGuid } from './guid-parser';
 import Decimal from 'decimal.js';
+import { convertLEBytesToString } from './tracking-buffer/bigint';
 
 const NULL = (1 << 16) - 1;
 const MAX = (1 << 16) - 1;
@@ -319,7 +320,7 @@ function valueParse(parser: Parser, metadata: Metadata, options: InternalConnect
         if (dataLength === 0) {
           return callback(null);
         } else {
-          return readNumeric(parser, dataLength!, metadata.precision!, metadata.scale!, callback);
+          return readNumeric(parser, dataLength!, metadata.precision!, metadata.scale!, options, callback);
         }
       });
 
@@ -360,32 +361,45 @@ function readUniqueIdentifier(parser: Parser, options: InternalConnectionOptions
   });
 }
 
-function readNumeric(parser: Parser, dataLength: number, _precision: number, scale: number, callback: (value: unknown) => void) {
+function readNumeric(parser: Parser, dataLength: number, _precision: number, scale: number, options: InternalConnectionOptions, callback: (value: unknown) => void) {
   parser.readUInt8((sign) => {
     sign = sign === 1 ? 1 : -1;
 
-    let readValue;
-    if (dataLength === 5) {
-      readValue = parser.readUInt32LEBI;
-    } else if (dataLength === 9) {
-      readValue = parser.readUNumeric64LEBI;
-    } else if (dataLength === 13) {
-      readValue = parser.readUNumeric96LEBI;
-    } else if (dataLength === 17) {
-      readValue = parser.readUNumeric128LEBI;
+    if (options.returnDecimalAndNumericAsString) {
+      return parser.readBuffer(dataLength - 1, (buffer) => {
+        let value = convertLEBytesToString(buffer);
+        if (scale > 0) {
+          value = value.padStart(scale + 1, '0');
+          const idx = value.length - scale;
+          value = value.slice(0, idx) + '.' + value.slice(idx);
+        }
+        if (sign === -1) value = '-' + value;
+        callback(value);
+      });
     } else {
-      return parser.emit('error', new Error(sprintf('Unsupported numeric dataLength %d', dataLength)));
-    }
-
-    readValue.call(parser, (value) => {
-      let constr = decimals[_precision];
-      if (!constr) {
-        constr = Decimal.clone({ precision: _precision });
-        decimals[_precision] = constr;
+      let readValue;
+      if (dataLength === 5) {
+        readValue = parser.readUInt32LEBI;
+      } else if (dataLength === 9) {
+        readValue = parser.readUNumeric64LEBI;
+      } else if (dataLength === 13) {
+        readValue = parser.readUNumeric96LEBI;
+      } else if (dataLength === 17) {
+        readValue = parser.readUNumeric128LEBI;
+      } else {
+        return parser.emit('error', new Error(sprintf('Unsupported numeric dataLength %d', dataLength)));
       }
-      const decimal = new constr(value.toString()).mul(sign).div(Math.pow(10, scale));
-      callback(decimal.toFixed(_precision));
-    });
+
+      readValue.call(parser, (value) => {
+        let constr = decimals[_precision];
+        if (!constr) {
+          constr = Decimal.clone({ precision: _precision });
+          decimals[_precision] = constr;
+        }
+        const decimal = new constr(value.toString()).mul(sign).div(Math.pow(10, scale));
+        callback(decimal.toFixed(_precision));
+      });
+    }
   });
 }
 
@@ -461,7 +475,7 @@ function readVariant(parser: Parser, options: InternalConnectionOptions, dataLen
         case 'DecimalN':
           return parser.readUInt8((precision) => {
             parser.readUInt8((scale) => {
-              readNumeric(parser, dataLength, precision, scale, callback);
+              readNumeric(parser, dataLength, precision, scale, options, callback);
             });
           });
 

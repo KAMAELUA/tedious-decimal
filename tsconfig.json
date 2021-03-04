@@ -3,18 +3,19 @@
     "target": "esnext",
     "moduleResolution": "node",
     "allowJs": false,
-    "noEmit": true,
+    "emitDeclarationOnly": true,
     "strict": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": [ "esnext" ],
     "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "temp"
   },
-
   "include": [
     "src/**/*.ts",
-    "test/**/*.ts",
+    "test/**/*.ts"
   ],
 
   "typedocOptions": {

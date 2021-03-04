@@ -377,6 +377,7 @@ export interface InternalConnectionOptions {
   validateBulkLoadParameters: boolean;
   workstationId: undefined | string;
   lowerCaseGuids: boolean;
+  returnDecimalAndNumericAsString: boolean;
 }
 
 /**
@@ -650,6 +651,13 @@ interface ConnectionOptions {
    * (default: `false`)
    */
   encrypt?: boolean;
+
+  /**
+   * If true, numeric will be serialized as string.
+   *
+   * (default: `false`)
+   */
+  returnDecimalAndNumericAsString?: boolean;
 
   /**
    * By default, if the database requested by [[database]] cannot be accessed,
@@ -1227,6 +1235,7 @@ class Connection extends EventEmitter {
         enableNumericRoundabort: false,
         enableQuotedIdentifier: true,
         encrypt: true,
+        returnDecimalAndNumericAsString: false,
         fallbackToDefaultDb: false,
         instanceName: undefined,
         isolationLevel: ISOLATION_LEVEL.READ_COMMITTED,
@@ -1466,6 +1475,14 @@ class Connection extends EventEmitter {
         }
 
         this.config.options.enableQuotedIdentifier = config.options.enableQuotedIdentifier;
+      }
+
+      if (config.options.returnDecimalAndNumericAsString !== undefined) {
+        if (typeof config.options.returnDecimalAndNumericAsString !== 'boolean') {
+          throw new TypeError('options.returnDecimalAndNumericAsString must be a boolean (true or false).');
+        }
+
+        this.config.options.returnDecimalAndNumericAsString = config.options.returnDecimalAndNumericAsString;
       }
 
       if (config.options.encrypt !== undefined) {
