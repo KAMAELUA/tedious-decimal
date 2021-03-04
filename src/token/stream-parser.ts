@@ -246,14 +246,6 @@ class Parser {
     });
   }
 
-  readUInt32LEBI(callback: (data: bigint) => void) {
-    this.awaitData(4, () => {
-      const data = BigInt(this.buffer.readUInt32LE(this.position));
-      this.position += 4;
-      callback(data);
-    });
-  }
-
   readUInt32BE(callback: (data: number) => void) {
     this.awaitData(4, () => {
       const data = this.buffer.readUInt32BE(this.position);
@@ -396,17 +388,6 @@ class Parser {
     });
   }
 
-  readUNumeric64LEBI(callback: (data: bigint) => void) {
-    this.awaitData(8, () => {
-      const low = BigInt(this.buffer.readUInt32LE(this.position));
-      const high = BigInt(this.buffer.readUInt32LE(this.position + 4));
-
-      this.position += 8;
-
-      callback((0x100000000n * high) + low);
-    });
-  }
-
   readUNumeric96LE(callback: (data: number) => void) {
     this.awaitData(12, () => {
       const dword1 = this.buffer.readUInt32LE(this.position);
@@ -416,18 +397,6 @@ class Parser {
       this.position += 12;
 
       callback(dword1 + (0x100000000 * dword2) + (0x100000000 * 0x100000000 * dword3));
-    });
-  }
-
-  readUNumeric96LEBI(callback: (data: bigint) => void) {
-    this.awaitData(12, () => {
-      const dword1 = BigInt(this.buffer.readUInt32LE(this.position));
-      const dword2 = BigInt(this.buffer.readUInt32LE(this.position + 4));
-      const dword3 = BigInt(this.buffer.readUInt32LE(this.position + 8));
-
-      this.position += 12;
-
-      callback(dword1 + (0x100000000n * dword2) + (0x100000000n * 0x100000000n * dword3));
     });
   }
 
@@ -441,19 +410,6 @@ class Parser {
       this.position += 16;
 
       callback(dword1 + (0x100000000 * dword2) + (0x100000000 * 0x100000000 * dword3) + (0x100000000 * 0x100000000 * 0x100000000 * dword4));
-    });
-  }
-
-  readUNumeric128LEBI(callback: (data: bigint) => void) {
-    this.awaitData(16, () => {
-      const dword1 = BigInt(this.buffer.readUInt32LE(this.position));
-      const dword2 = BigInt(this.buffer.readUInt32LE(this.position + 4));
-      const dword3 = BigInt(this.buffer.readUInt32LE(this.position + 8));
-      const dword4 = BigInt(this.buffer.readUInt32LE(this.position + 12));
-
-      this.position += 16;
-
-      callback(dword1 + (0x100000000n * dword2) + (0x100000000n * 0x100000000n * dword3) + (0x100000000n * 0x100000000n * 0x100000000n * dword4));
     });
   }
 
