@@ -11,7 +11,8 @@
     "lib": [ "esnext" ],
     "skipLibCheck": true,
     "declaration": true,
-    "outDir": "temp"
+    "outDir": "temp",
+    "resolveJsonModule": true
   },
   "include": [
     "src/**/*.ts",
