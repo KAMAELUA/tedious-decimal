@@ -489,7 +489,7 @@ interface AuthenticationOptions {
   options?: any;
 }
 
-interface ConnectionOptions {
+export interface ConnectionOptions {
   /**
    * A boolean determining whether to rollback a transaction automatically if any error is encountered
    * during the given transaction's execution. This sets the value for `SET XACT_ABORT` during the
