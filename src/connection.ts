@@ -3261,6 +3261,8 @@ class Connection extends EventEmitter {
       request.rst! = [];
 
       const onCancel = () => {
+        payloadStream.unpipe(message);
+
         // set the ignore bit and end the message.
         message.ignore = true;
         message.end();
@@ -3291,6 +3293,8 @@ class Connection extends EventEmitter {
 
       const payloadStream = (Readable as any).from(payload!) as Stream;
       payloadStream.once('error', (error) => {
+        payloadStream.unpipe(message);
+
         // Only set a request error if no error was set yet.
         request.error ??= error;
 
