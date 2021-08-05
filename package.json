@@ -35,7 +35,7 @@
     "url": "https://github.com/KAMAELUA/tedious.git"
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 12"
   },
   "publishConfig": {
     "tag": "next"
