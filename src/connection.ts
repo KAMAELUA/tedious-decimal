@@ -2825,7 +2825,7 @@ class Connection extends EventEmitter {
       parameters.push(...request.parameters);
     }
 
-    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_executesql', parameters, this.currentTransactionDescriptor(), this.config.options));
+    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_executesql', parameters, this.currentTransactionDescriptor(), this.config.options, this.databaseCollation));
   }
 
   /**
@@ -3039,7 +3039,7 @@ class Connection extends EventEmitter {
       }
     });
 
-    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_prepare', parameters, this.currentTransactionDescriptor(), this.config.options));
+    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_prepare', parameters, this.currentTransactionDescriptor(), this.config.options, this.databaseCollation));
   }
 
   /**
@@ -3063,7 +3063,7 @@ class Connection extends EventEmitter {
       scale: undefined
     });
 
-    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_unprepare', parameters, this.currentTransactionDescriptor(), this.config.options));
+    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_unprepare', parameters, this.currentTransactionDescriptor(), this.config.options, this.databaseCollation));
   }
 
   /**
@@ -3109,7 +3109,7 @@ class Connection extends EventEmitter {
       return;
     }
 
-    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_execute', executeParameters, this.currentTransactionDescriptor(), this.config.options));
+    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload('sp_execute', executeParameters, this.currentTransactionDescriptor(), this.config.options, this.databaseCollation));
   }
 
   /**
@@ -3131,7 +3131,7 @@ class Connection extends EventEmitter {
       return;
     }
 
-    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload(request.sqlTextOrProcedure!, request.parameters, this.currentTransactionDescriptor(), this.config.options));
+    this.makeRequest(request, TYPE.RPC_REQUEST, new RpcRequestPayload(request.sqlTextOrProcedure!, request.parameters, this.currentTransactionDescriptor(), this.config.options, this.databaseCollation));
   }
 
   /**
