@@ -47,6 +47,7 @@ import { MemoryCache } from 'adal-node';
 import AbortController, { AbortSignal } from 'node-abort-controller';
 import { Parameter, TYPES } from './data-type';
 import { BulkLoadPayload } from './bulk-load-payload';
+import { Collation } from './collation';
 
 import { version } from '../package.json';
 
@@ -1028,6 +1029,11 @@ class Connection extends EventEmitter {
    * @private
    */
   _cancelAfterRequestSent: () => void;
+
+  /**
+   * @private
+   */
+  databaseCollation: Collation | undefined;
 
   /**
    * Note: be aware of the different options field:
@@ -2038,6 +2044,10 @@ class Connection extends EventEmitter {
 
     tokenStreamParser.on('charsetChange', (token) => {
       this.emit('charsetChange', token.newValue);
+    });
+
+    tokenStreamParser.on('sqlCollationChange', (token) => {
+      this.databaseCollation = token.newValue;
     });
 
     tokenStreamParser.on('fedAuthInfo', (token) => {
