@@ -164,7 +164,7 @@ function valueParse(parser: Parser, metadata: Metadata, options: InternalConnect
 
     case 'VarChar':
     case 'Char':
-      const codepage = metadata.collation!.codepage;
+      const codepage = metadata.collation!.codepage!;
       if (metadata.dataLength === MAX) {
         return readMaxChars(parser, codepage, callback);
       } else {
@@ -214,7 +214,7 @@ function valueParse(parser: Parser, metadata: Metadata, options: InternalConnect
         parser.readBuffer(textPointerLength, (_textPointer) => {
           parser.readBuffer(8, (_timestamp) => {
             parser.readUInt32LE((dataLength) => {
-              readChars(parser, dataLength!, metadata.collation!.codepage, callback);
+              readChars(parser, dataLength!, metadata.collation!.codepage!, callback);
             });
           });
         });
@@ -474,7 +474,7 @@ function readVariant(parser: Parser, options: InternalConnectionOptions, dataLen
         case 'Char':
           return parser.readUInt16LE((_maxLength) => {
             readCollation(parser, (collation) => {
-              readChars(parser, dataLength, collation!.codepage, callback);
+              readChars(parser, dataLength, collation.codepage!, callback);
             });
           });
 
