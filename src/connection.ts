@@ -2787,7 +2787,7 @@ class Connection extends EventEmitter {
    */
   execSql(request: Request) {
     try {
-      request.validateParameters();
+      request.validateParameters(this.databaseCollation);
     } catch (error) {
       request.error = error;
 
@@ -2849,7 +2849,7 @@ class Connection extends EventEmitter {
     if (typeof options !== 'object') {
       throw new TypeError('"options" argument must be an object');
     }
-    return new BulkLoad(table, this.config.options, options, callback);
+    return new BulkLoad(table, this.databaseCollation, this.config.options, options, callback);
   }
 
   /**
@@ -3095,7 +3095,7 @@ class Connection extends EventEmitter {
 
         executeParameters.push({
           ...parameter,
-          value: parameter.type.validate(parameters ? parameters[parameter.name] : null)
+          value: parameter.type.validate(parameters ? parameters[parameter.name] : null, this.databaseCollation)
         });
       }
     } catch (error) {
@@ -3119,7 +3119,7 @@ class Connection extends EventEmitter {
    */
   callProcedure(request: Request) {
     try {
-      request.validateParameters();
+      request.validateParameters(this.databaseCollation);
     } catch (error) {
       request.error = error;
 
