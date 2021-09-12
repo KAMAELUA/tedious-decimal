@@ -1149,6 +1149,13 @@ class Connection extends EventEmitter {
           throw new TypeError('The "config.authentication.options.msiEndpoint" property must be of type string.');
         }
 
+        if (options.msiEndpoint !== undefined && options.msiEndpoint !== process.env.MSI_ENDPOINT) {
+          deprecate(
+            'The `config.authentication.options.msiEndpoint` property is deprecated and will be removed in the next major release. ' +
+            'To silence this message, ensure that `process.env.MSI_ENDPOINT` and `config.authentication.options.msiEndpoint` are set to the same value.'
+          );
+        }
+
         authentication = {
           type: 'azure-active-directory-msi-vm',
           options: {
@@ -1167,6 +1174,20 @@ class Connection extends EventEmitter {
 
         if (options.msiSecret !== undefined && typeof options.msiSecret !== 'string') {
           throw new TypeError('The "config.authentication.options.msiSecret" property must be of type string.');
+        }
+
+        if (options.msiEndpoint !== undefined && options.msiEndpoint !== process.env.MSI_ENDPOINT) {
+          deprecate(
+            'The `config.authentication.options.msiEndpoint` property is deprecated and will be removed in the next major release. ' +
+            'To silence this message, ensure that `process.env.MSI_ENDPOINT` and `config.authentication.options.msiEndpoint` are set to the same value.'
+          );
+        }
+
+        if (options.msiSecret !== undefined && options.msiSecret !== process.env.MSI_SECRET) {
+          deprecate(
+            'The `config.authentication.options.msiSecret` property is deprecated and will be removed in the next major release. ' +
+            'To silence this message, ensure that `process.env.MSI_SECRET` and `config.authentication.options.msiSecret` are set to the same value.'
+          );
         }
 
         authentication = {
