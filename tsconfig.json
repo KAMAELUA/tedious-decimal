@@ -12,7 +12,8 @@
     "skipLibCheck": true,
     "declaration": true,
     "outDir": "temp",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "exactOptionalPropertyTypes": true
   },
   "include": [
     "src/**/*.ts",
