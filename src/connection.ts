@@ -3028,7 +3028,7 @@ class Connection extends EventEmitter {
       name: 'handle',
       // TODO: Abort if `request.handle` is not set
       value: request.handle,
-      output: true,
+      output: false,
       length: undefined,
       precision: undefined,
       scale: undefined
@@ -3054,7 +3054,7 @@ class Connection extends EventEmitter {
       name: 'handle',
       // TODO: Abort if `request.handle` is not set
       value: request.handle,
-      output: true,
+      output: false,
       length: undefined,
       precision: undefined,
       scale: undefined
