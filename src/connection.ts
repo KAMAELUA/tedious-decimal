@@ -47,7 +47,7 @@ import { Collation } from './collation';
 
 import { version } from '../package.json';
 import { URL } from 'url';
-import { LegacyTokenHandler, TokenHandler } from './token/handler';
+import { LegacyTokenHandler, Login7TokenHandler, TokenHandler } from './token/handler';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const deprecate = depd('tedious');
@@ -3445,7 +3445,7 @@ Connection.prototype.STATE = {
         }
       },
       message: function(message) {
-        const tokenStreamParser = this.createTokenStreamParser(message);
+        const tokenStreamParser = this.createTokenStreamParser(message, new Login7TokenHandler(this));
 
         tokenStreamParser.once('end', () => {
           if (this.loggedIn) {
@@ -3480,7 +3480,7 @@ Connection.prototype.STATE = {
         this.transitionTo(this.STATE.FINAL);
       },
       message: function(message) {
-        const tokenStreamParser = this.createTokenStreamParser(message);
+        const tokenStreamParser = this.createTokenStreamParser(message, new Login7TokenHandler(this));
 
         tokenStreamParser.once('end', () => {
           if (this.ntlmpacket) {
@@ -3534,7 +3534,7 @@ Connection.prototype.STATE = {
         this.fedAuthInfoToken = token;
       },
       message: function(message) {
-        const tokenStreamParser = this.createTokenStreamParser(message);
+        const tokenStreamParser = this.createTokenStreamParser(message, new Login7TokenHandler(this));
 
         tokenStreamParser.once('end', () => {
           if (this.loggedIn) {
