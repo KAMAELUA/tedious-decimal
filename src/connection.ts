@@ -1713,8 +1713,6 @@ class Connection extends EventEmitter {
 
     this._cancelAfterRequestSent = () => {
       this.messageIo.sendMessage(TYPE.ATTENTION);
-
-      this.transitionTo(this.STATE.SENT_ATTENTION);
       this.createCancelTimer();
     };
   }
@@ -2100,6 +2098,7 @@ class Connection extends EventEmitter {
   clearConnectTimer() {
     if (this.connectTimer) {
       clearTimeout(this.connectTimer);
+      this.connectTimer = undefined;
     }
   }
 
@@ -2109,6 +2108,7 @@ class Connection extends EventEmitter {
   clearCancelTimer() {
     if (this.cancelTimer) {
       clearTimeout(this.cancelTimer);
+      this.cancelTimer = undefined;
     }
   }
 
@@ -3530,7 +3530,21 @@ Connection.prototype.STATE = {
 
         const tokenStreamParser = this.createTokenStreamParser(message, new RequestTokenHandler(this, this.request!));
 
-        const onResume = () => { tokenStreamParser.resume(); };
+        // If the request was canceled and we have a `cancelTimer`
+        // defined, we send a attention message after the
+        // request message was fully sent off.
+        //
+        // We already started consuming the current message
+        // (but all the token handlers should be no-ops), and
+        // need to ensure the next message is handled by the
+        // `SENT_ATTENTION` state.
+        if (this.request?.canceled && this.cancelTimer) {
+          return this.transitionTo(this.STATE.SENT_ATTENTION);
+        }
+
+        const onResume = () => {
+          tokenStreamParser.resume();
+        };
         const onPause = () => {
           tokenStreamParser.pause();
 
@@ -3553,6 +3567,12 @@ Connection.prototype.STATE = {
 
           this.request?.removeListener('pause', onPause);
           this.request?.removeListener('resume', onResume);
+
+          // The `_cancelAfterRequestSent` callback will have sent a
+          // attention message, so now we need to also switch to
+          // the `SENT_ATTENTION` state to make sure the attention ack
+          // message is processed correctly.
+          this.transitionTo(this.STATE.SENT_ATTENTION);
         };
 
         const onEndOfMessage = () => {
