@@ -390,7 +390,6 @@ interface State {
   events: {
     socketError?(this: Connection, err: Error): void;
     connectTimeout?(this: Connection): void;
-    socketConnect?(this: Connection): void;
     message?(this: Connection, message: Message): void;
     retry?(this: Connection): void;
     reconnect?(this: Connection): void;
@@ -1985,7 +1984,12 @@ class Connection extends EventEmitter {
       this.messageIo.on('secure', (cleartext) => { this.emit('secure', cleartext); });
 
       this.socket = socket;
-      this.socketConnect();
+
+      this.closed = false;
+      this.debug.log('connected to ' + this.config.server + ':' + this.config.options.port);
+
+      this.sendPreLogin();
+      this.transitionTo(this.STATE.SENT_PRELOGIN);
     });
   }
 
@@ -2189,15 +2193,6 @@ class Connection extends EventEmitter {
       this.emit('error', ConnectionError(message, 'ESOCKET'));
     }
     this.dispatchEvent('socketError', error);
-  }
-
-  /**
-   * @private
-   */
-  socketConnect() {
-    this.closed = false;
-    this.debug.log('connected to ' + this.config.server + ':' + this.config.options.port);
-    this.dispatchEvent('socketConnect');
   }
 
   /**
@@ -3177,10 +3172,6 @@ Connection.prototype.STATE = {
       },
       connectTimeout: function() {
         this.transitionTo(this.STATE.FINAL);
-      },
-      socketConnect: function() {
-        this.sendPreLogin();
-        this.transitionTo(this.STATE.SENT_PRELOGIN);
       }
     }
   },
