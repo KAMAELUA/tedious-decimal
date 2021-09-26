@@ -1982,11 +1982,7 @@ class Connection extends EventEmitter {
       socket.setKeepAlive(true, KEEP_ALIVE_INITIAL_DELAY);
 
       this.messageIo = new MessageIO(socket, this.config.options.packetSize, this.debug);
-      this.messageIo.on('data', (message) => { this.dispatchEvent('message', message); });
       this.messageIo.on('secure', (cleartext) => { this.emit('secure', cleartext); });
-      this.messageIo.on('error', (error) => {
-        this.socketError(error);
-      });
 
       this.socket = socket;
       this.socketConnect();
@@ -3192,6 +3188,12 @@ Connection.prototype.STATE = {
     name: 'SentPrelogin',
     enter: function() {
       this.emptyMessageBuffer();
+
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
     },
     events: {
       socketError: function() {
@@ -3278,6 +3280,13 @@ Connection.prototype.STATE = {
   },
   SENT_TLSSSLNEGOTIATION: {
     name: 'SentTLSSSLNegotiation',
+    enter: function() {
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
+    },
     events: {
       socketError: function() {
         this.transitionTo(this.STATE.FINAL);
@@ -3303,6 +3312,12 @@ Connection.prototype.STATE = {
             } else {
               this.transitionTo(this.STATE.SENT_LOGIN7_WITH_STANDARD_LOGIN);
             }
+          } else {
+            this.messageIo.readMessage().then((message) => {
+              this.dispatchEvent('message', message);
+            }, (err) => {
+              this.socketError(err);
+            });
           }
         });
       }
@@ -3310,6 +3325,13 @@ Connection.prototype.STATE = {
   },
   SENT_LOGIN7_WITH_STANDARD_LOGIN: {
     name: 'SentLogin7WithStandardLogin',
+    enter: function() {
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
+    },
     events: {
       socketError: function() {
         this.transitionTo(this.STATE.FINAL);
@@ -3345,6 +3367,13 @@ Connection.prototype.STATE = {
   },
   SENT_LOGIN7_WITH_NTLM: {
     name: 'SentLogin7WithNTLMLogin',
+    enter: function() {
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
+    },
     events: {
       socketError: function() {
         this.transitionTo(this.STATE.FINAL);
@@ -3372,6 +3401,12 @@ Connection.prototype.STATE = {
             });
 
             this.ntlmpacket = undefined;
+
+            this.messageIo.readMessage().then((message) => {
+              this.dispatchEvent('message', message);
+            }, (err) => {
+              this.socketError(err);
+            });
           } else if (this.loggedIn) {
             if (this.routingData) {
               this.transitionTo(this.STATE.REROUTING);
@@ -3396,6 +3431,13 @@ Connection.prototype.STATE = {
   },
   SENT_LOGIN7_WITH_FEDAUTH: {
     name: 'SentLogin7Withfedauth',
+    enter: function() {
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
+    },
     events: {
       socketError: function() {
         this.transitionTo(this.STATE.FINAL);
@@ -3485,6 +3527,12 @@ Connection.prototype.STATE = {
     name: 'LoggedInSendingInitialSql',
     enter: function() {
       this.sendInitialSql();
+
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
     },
     events: {
       socketError: function socketError() {
@@ -3513,6 +3561,15 @@ Connection.prototype.STATE = {
   },
   SENT_CLIENT_REQUEST: {
     name: 'SentClientRequest',
+    enter: function() {
+      this.emptyMessageBuffer();
+
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
+    },
     exit: function(nextState) {
       this.clearRequestTimer();
     },
@@ -3597,6 +3654,15 @@ Connection.prototype.STATE = {
   },
   SENT_ATTENTION: {
     name: 'SentAttention',
+    enter: function() {
+      this.emptyMessageBuffer();
+
+      this.messageIo.readMessage().then((message) => {
+        this.dispatchEvent('message', message);
+      }, (err) => {
+        this.socketError(err);
+      });
+    },
     events: {
       socketError: function(err) {
         const sqlRequest = this.request!;
