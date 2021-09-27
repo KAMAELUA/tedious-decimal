@@ -35,7 +35,6 @@ import { name as libraryName } from './library';
 import { versions } from './tds-versions';
 import Message from './message';
 import { Metadata } from './metadata-parser';
-import { FedAuthInfoToken } from './token/token';
 import { createNTLMRequest } from './ntlm';
 import { ColumnEncryptionAzureKeyVaultProvider } from './always-encrypted/keystore-provider-azure-key-vault';
 import depd from 'depd';
@@ -872,10 +871,6 @@ class Connection extends EventEmitter {
   /**
    * @private
    */
-  fedAuthInfoToken: undefined | FedAuthInfoToken;
-  /**
-   * @private
-   */
   config: InternalConnectionConfig;
   /**
    * @private
@@ -1045,7 +1040,6 @@ class Connection extends EventEmitter {
     }
 
     this.fedAuthRequired = false;
-    this.fedAuthInfoToken = undefined;
 
     let authentication: InternalConnectionConfig['authentication'];
     if (config.authentication !== undefined) {
@@ -3433,7 +3427,8 @@ Connection.prototype.STATE = {
         this.transitionTo(this.STATE.FINAL);
       },
       message: function(message) {
-        const tokenStreamParser = this.createTokenStreamParser(message, new Login7TokenHandler(this));
+        const handler = new Login7TokenHandler(this);
+        const tokenStreamParser = this.createTokenStreamParser(message, handler);
 
         tokenStreamParser.once('end', () => {
           if (this.loggedIn) {
@@ -3446,7 +3441,7 @@ Connection.prototype.STATE = {
             return;
           }
 
-          const fedAuthInfoToken = this.fedAuthInfoToken;
+          const fedAuthInfoToken = handler.fedAuthInfoToken;
 
           if (fedAuthInfoToken && fedAuthInfoToken.stsurl && fedAuthInfoToken.spn) {
             const authentication = this.config.authentication as AzureActiveDirectoryPasswordAuthentication | AzureActiveDirectoryMsiVmAuthentication | AzureActiveDirectoryMsiAppServiceAuthentication | AzureActiveDirectoryServicePrincipalSecret;
