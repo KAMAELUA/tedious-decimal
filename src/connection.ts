@@ -907,10 +907,6 @@ class Connection extends EventEmitter {
   /**
    * @private
    */
-  loggedIn: boolean;
-  /**
-   * @private
-   */
   loginError: undefined | ConnectionError;
   /**
    * @private
@@ -1692,7 +1688,6 @@ class Connection extends EventEmitter {
     this.transactionDepth = 0;
     this.isSqlBatch = false;
     this.closed = false;
-    this.loggedIn = false;
     this.messageBuffer = Buffer.alloc(0);
 
     this.curTransientRetryCount = 0;
@@ -1925,7 +1920,6 @@ class Connection extends EventEmitter {
       }
 
       this.closed = true;
-      this.loggedIn = false;
       this.loginError = undefined;
     }
   }
@@ -3321,10 +3315,11 @@ Connection.prototype.STATE = {
         this.transitionTo(this.STATE.FINAL);
       },
       message: function(message) {
-        const tokenStreamParser = this.createTokenStreamParser(message, new Login7TokenHandler(this));
+        const handler = new Login7TokenHandler(this);
+        const tokenStreamParser = this.createTokenStreamParser(message, handler);
 
         tokenStreamParser.once('end', () => {
-          if (this.loggedIn) {
+          if (handler.loginAckReceived) {
             if (this.routingData) {
               this.transitionTo(this.STATE.REROUTING);
             } else {
@@ -3363,10 +3358,17 @@ Connection.prototype.STATE = {
         this.transitionTo(this.STATE.FINAL);
       },
       message: function(message) {
-        const tokenStreamParser = this.createTokenStreamParser(message, new Login7TokenHandler(this));
+        const handler = new Login7TokenHandler(this);
+        const tokenStreamParser = this.createTokenStreamParser(message, handler);
 
         tokenStreamParser.once('end', () => {
-          if (this.ntlmpacket) {
+          if (handler.loginAckReceived) {
+            if (this.routingData) {
+              this.transitionTo(this.STATE.REROUTING);
+            } else {
+              this.transitionTo(this.STATE.LOGGED_IN_SENDING_INITIAL_SQL);
+            }
+          } else if (this.ntlmpacket) {
             const authentication = this.config.authentication as NtlmAuthentication;
 
             const payload = new NTLMResponsePayload({
@@ -3388,12 +3390,6 @@ Connection.prototype.STATE = {
             }, (err) => {
               this.socketError(err);
             });
-          } else if (this.loggedIn) {
-            if (this.routingData) {
-              this.transitionTo(this.STATE.REROUTING);
-            } else {
-              this.transitionTo(this.STATE.LOGGED_IN_SENDING_INITIAL_SQL);
-            }
           } else if (this.loginError) {
             if (this.loginError.isTransient) {
               this.debug.log('Initiating retry on transient error');
@@ -3431,7 +3427,7 @@ Connection.prototype.STATE = {
         const tokenStreamParser = this.createTokenStreamParser(message, handler);
 
         tokenStreamParser.once('end', () => {
-          if (this.loggedIn) {
+          if (handler.loginAckReceived) {
             if (this.routingData) {
               this.transitionTo(this.STATE.REROUTING);
             } else {
