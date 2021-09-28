@@ -1786,7 +1786,18 @@ class Connection extends EventEmitter {
    */
   on(event: 'secure', listener: (cleartext: import('tls').TLSSocket) => void): this
 
+  /**
+   * A SSPI token was send by the server.
+   *
+   * @deprecated
+   */
+  on(event: 'sspichallenge', listener: (token: import('./token/token').SSPIToken) => void): this
+
   on(event: string | symbol, listener: (...args: any[]) => void) {
+    if (event === 'sspichallenge') {
+      emitSSPIChallengeEventDeprecationWarning();
+    }
+
     return super.on(event, listener);
   }
 
@@ -3132,6 +3143,21 @@ class Connection extends EventEmitter {
         return 'read committed';
     }
   }
+}
+
+let sspichallengeEventDeprecationWarningEmitted = false;
+function emitSSPIChallengeEventDeprecationWarning() {
+  if (sspichallengeEventDeprecationWarningEmitted) {
+    return;
+  }
+
+  sspichallengeEventDeprecationWarningEmitted = true;
+
+  process.emitWarning(
+    'The `sspichallenge` event is deprecated and will be removed.',
+    'DeprecationWarning',
+    Connection.prototype.on
+  );
 }
 
 export default Connection;
