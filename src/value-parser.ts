@@ -6,7 +6,6 @@ import { TYPE } from './data-type';
 import iconv from 'iconv-lite';
 import { sprintf } from 'sprintf-js';
 import { bufferToLowerCaseGuid, bufferToUpperCaseGuid } from './guid-parser';
-import { convertLEBytesToString } from './tracking-buffer/bigint';
 
 const NULL = (1 << 16) - 1;
 const MAX = (1 << 16) - 1;
@@ -362,30 +361,43 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
   parser.readUInt8((sign) => {
     sign = sign === 1 ? 1 : -1;
 
-    let readValue;
-    if (dataLength === 5) {
-      readValue = parser.readUInt32LE;
-    } else if (dataLength === 9) {
-      readValue = parser.readUNumeric64LE;
-    } else if (dataLength === 13) {
-      readValue = parser.readUNumeric96LE;
-    } else if (dataLength === 17) {
-      readValue = parser.readUNumeric128LE;
-    } else {
-      throw new Error(sprintf('Unsupported numeric dataLength %d', dataLength));
-    }
+    if (parser.options.returnDecimalAndNumericAsString) {
+      let readValue;
 
-    readValue.call(parser, (value) => {
-      if (parser.options.returnDecimalAndNumericAsString) {
-        let stringVal = value.toString().padStart(scale + 1, '0');
-        const idx = stringVal.length - scale;
-        stringVal = stringVal.slice(0, idx) + '.' + stringVal.slice(idx);
-        if (sign === -1) stringVal = '-' + stringVal;
-        callback(stringVal);
+      if(dataLength === 5) {
+        readValue = parser.readUInt32LE;
+      } else if (dataLength === 9) {
+        readValue = parser.readUNumeric64LEBI;
       } else {
-        callback((Number(value) * sign) / Math.pow(10, scale));
+        readValue = parser.readLEBytesAsString(dataLength - 1);
       }
-    });
+
+      readValue.call(parser, (value: any) => {
+        value = value.toString();
+        value = value.padStart(scale + 1, '0');
+        const idx = value.length - scale;
+        value = value.slice(0, idx) + '.' + value.slice(idx);
+        if (sign == -1) value = '-' + value;
+        callback(value);
+      });
+    } else {
+      let readValue;
+      if (dataLength === 5) {
+        readValue = parser.readUInt32LE;
+      } else if (dataLength === 9) {
+        readValue = parser.readUNumeric64LE;
+      } else if (dataLength === 13) {
+        readValue = parser.readUNumeric96LE;
+      } else if (dataLength === 17) {
+        readValue = parser.readUNumeric128LE;
+      } else {
+        throw new Error(sprintf('Unsupported numeric dataLength %d', dataLength));
+      }
+
+      readValue.call(parser, (value) => {
+        callback((Number(value) * sign) / Math.pow(10, scale));
+      });
+    }
   });
 }
 

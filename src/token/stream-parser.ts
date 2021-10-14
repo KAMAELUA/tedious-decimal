@@ -17,6 +17,7 @@ import returnValueParser from './returnvalue-token-parser';
 import rowParser from './row-token-parser';
 import nbcRowParser from './nbcrow-token-parser';
 import sspiParser from './sspi-token-parser';
+import {convertLEBytesToString} from "../tracking-buffer/bigint";
 
 const tokenParsers = {
   [TYPE.DONE]: doneParser,
@@ -246,6 +247,18 @@ class Parser {
     });
   }
 
+  readLEBytesAsString(length: number){
+    return function (this: Parser, callback: (data: string) => void) {
+      this.readBuffer(length, (buffer) => {
+        callback(convertLEBytesToString(buffer));
+      });
+    }.bind(this)
+  }
+
+  // readLEBytesAsString(callback: (data: string) => void) {
+  //   this.
+  // }
+
   readUInt32BE(callback: (data: number) => void) {
     this.awaitData(4, () => {
       const data = this.buffer.readUInt32BE(this.position);
@@ -385,6 +398,17 @@ class Parser {
       this.position += 8;
 
       callback((0x100000000 * high) + low);
+    });
+  }
+
+  readUNumeric64LEBI(callback: (data: bigint) => void) {
+    this.awaitData(8, () => {
+      const low = BigInt(this.buffer.readUInt32LE(this.position));
+      const high = BigInt(this.buffer.readUInt32LE(this.position + 4));
+
+      this.position += 8;
+
+      callback((0x100000000n * high) + low);
     });
   }
 
