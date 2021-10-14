@@ -28,7 +28,7 @@
   "homepage": "https://github.com/KAMAELUA/tedious",
   "bugs": "https://github.com/KAMAELUA/tedious/issues",
   "license": "MIT",
-  "version": "14.0.0-2",
+  "version": "14.0.0",
   "main": "./lib/tedious.js",
   "repository": {
     "type": "git",
