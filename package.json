@@ -25,14 +25,14 @@
     "msnodesql",
     "azure"
   ],
-  "homepage": "https://github.com/KAMAELUA/tedious",
-  "bugs": "https://github.com/KAMAELUA/tedious/issues",
+  "homepage": "https://github.com/KAMAELUA/tedious-decimal",
+  "bugs": "https://github.com/KAMAELUA/tedious-decimal/issues",
   "license": "MIT",
-  "version": "14.0.0",
+  "version": "14.0.0-3",
   "main": "./lib/tedious.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KAMAELUA/tedious.git"
+    "url": "https://github.com/KAMAELUA/tedious-decimal.git"
   },
   "engines": {
     "node": ">= 12"
