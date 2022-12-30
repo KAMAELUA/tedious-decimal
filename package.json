@@ -28,7 +28,7 @@
   "homepage": "https://github.com/KAMAELUA/tedious-decimal",
   "bugs": "https://github.com/KAMAELUA/tedious-decimal/issues",
   "license": "MIT",
-  "version": "14.0.0-3",
+  "version": "14.0.0-4",
   "main": "./lib/tedious.js",
   "repository": {
     "type": "git",

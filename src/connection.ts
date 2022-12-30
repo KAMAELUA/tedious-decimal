@@ -369,6 +369,7 @@ export interface InternalConnectionOptions {
   workstationId: undefined | string;
   lowerCaseGuids: boolean;
   returnDecimalAndNumericAsString?: boolean;
+  decimalStringTrimTrailingZero?: boolean;
 }
 
 interface KeyStoreProviderMap {
@@ -648,6 +649,13 @@ export interface ConnectionOptions {
    * (default: `false`)
    */
   returnDecimalAndNumericAsString?: boolean;
+
+  /**
+   * If true, trailing zero in numeric will be removed.
+   *
+   * (default: `false`)
+   */
+  decimalStringTrimTrailingZero?: boolean;
 
   /**
    * By default, if the database requested by [[database]] cannot be accessed,
@@ -1209,6 +1217,7 @@ class Connection extends EventEmitter {
         enableQuotedIdentifier: true,
         encrypt: true,
         returnDecimalAndNumericAsString: false,
+        decimalStringTrimTrailingZero: false,
         fallbackToDefaultDb: false,
         encryptionKeyStoreProviders: undefined,
         instanceName: undefined,
@@ -1459,6 +1468,14 @@ class Connection extends EventEmitter {
         }
 
         this.config.options.returnDecimalAndNumericAsString = config.options.returnDecimalAndNumericAsString;
+      }
+
+      if (config.options.decimalStringTrimTrailingZero !== undefined) {
+        if (typeof config.options.decimalStringTrimTrailingZero !== 'boolean') {
+          throw new TypeError('options.decimalStringTrimTrailingZero must be a boolean (true or false).');
+        }
+
+        this.config.options.decimalStringTrimTrailingZero = config.options.decimalStringTrimTrailingZero;
       }
 
       if (config.options.encrypt !== undefined) {

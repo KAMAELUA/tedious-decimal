@@ -364,7 +364,7 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
     if (parser.options.returnDecimalAndNumericAsString) {
       let readValue;
 
-      if(dataLength === 5) {
+      if (dataLength === 5) {
         readValue = parser.readUInt32LE;
       } else if (dataLength === 9) {
         readValue = parser.readUNumeric64LEBI;
@@ -376,8 +376,25 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
         value = value.toString();
         value = value.padStart(scale + 1, '0');
         const idx = value.length - scale;
-        value = value.slice(0, idx) + '.' + value.slice(idx);
-        if (sign == -1) value = '-' + value;
+
+        const left = value.slice(0, idx);
+        let right = value.slice(idx);
+
+        if (parser.options.decimalStringTrimTrailingZero) {
+          for (let i = right.length - 1; i >= 0; i--) {
+            if (right[i] === '0') {
+              right = right.substring(0, i);
+            } else {
+              break;
+            }
+          }
+
+          value = right.length ? left + '.' + right : left;
+        } else {
+          value = left + '.' + right;
+        }
+
+        if (sign === -1) value = '-' + value;
         callback(value);
       });
     } else {
