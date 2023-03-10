@@ -1,11 +1,11 @@
-import Parser from './token/stream-parser';
+import Parser, { ParserOptions } from './token/stream-parser';
 import { Metadata, readCollation } from './metadata-parser';
-import { InternalConnectionOptions } from './connection';
 import { TYPE } from './data-type';
 
 import iconv from 'iconv-lite';
 import { sprintf } from 'sprintf-js';
 import { bufferToLowerCaseGuid, bufferToUpperCaseGuid } from './guid-parser';
+import { InternalConnectionOptions } from './connection';
 
 const NULL = (1 << 16) - 1;
 const MAX = (1 << 16) - 1;
@@ -351,7 +351,7 @@ function valueParse(parser: Parser, metadata: Metadata, options: InternalConnect
   }
 }
 
-function readUniqueIdentifier(parser: Parser, options: InternalConnectionOptions, callback: (value: unknown) => void) {
+function readUniqueIdentifier(parser: Parser, options: ParserOptions, callback: (value: unknown) => void) {
   parser.readBuffer(0x10, (data) => {
     callback(options.lowerCaseGuids ? bufferToLowerCaseGuid(data) : bufferToUpperCaseGuid(data));
   });
@@ -361,7 +361,7 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
   parser.readUInt8((sign) => {
     sign = sign === 1 ? 1 : -1;
 
-    if (parser.options.returnDecimalAndNumericAsString) {
+    if (options.returnDecimalAndNumericAsString) {
       let readValue;
 
       if (dataLength === 5) {
@@ -380,7 +380,7 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
         const left = value.slice(0, idx);
         let right = value.slice(idx);
 
-        if (parser.options.decimalStringTrimTrailingZero) {
+        if (options.decimalStringTrimTrailingZero) {
           for (let i = right.length - 1; i >= 0; i--) {
             if (right[i] === '0') {
               right = right.substring(0, i);
