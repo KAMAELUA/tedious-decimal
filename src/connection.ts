@@ -3200,7 +3200,7 @@ Connection.prototype.STATE = {
 
         if (preloginPayload.encryptionString === 'ON' || preloginPayload.encryptionString === 'REQ') {
           if (!this.config.options.encrypt) {
-              this.emit('connect', new ConnectionError("Server requires encryption, set 'encrypt' config option to true.", 'EENCRYPT'));
+            this.emit('connect', new ConnectionError("Server requires encryption, set 'encrypt' config option to true.", 'EENCRYPT'));
             return this.close();
           }
 
@@ -3335,7 +3335,7 @@ Connection.prototype.STATE = {
             this.transitionTo(this.STATE.FINAL);
           }
         } else {
-            this.emit('connect', new ConnectionError('Login failed.', 'ELOGIN'));
+          this.emit('connect', new ConnectionError('Login failed.', 'ELOGIN'));
           this.transitionTo(this.STATE.FINAL);
         }
       })().catch((err) => {
@@ -3447,7 +3447,7 @@ Connection.prototype.STATE = {
           return;
         }
 
-          const fedAuthInfoToken = handler.fedAuthInfoToken;
+        const fedAuthInfoToken = handler.fedAuthInfoToken;
 
         if (fedAuthInfoToken && fedAuthInfoToken.stsurl && fedAuthInfoToken.spn) {
           const authentication = this.config.authentication as AzureActiveDirectoryPasswordAuthentication | AzureActiveDirectoryMsiVmAuthentication | AzureActiveDirectoryMsiAppServiceAuthentication | AzureActiveDirectoryServicePrincipalSecret | AzureActiveDirectoryDefaultAuthentication;
@@ -3461,7 +3461,7 @@ Connection.prototype.STATE = {
                 authentication.options.tenantId ?? 'common',
                 authentication.options.clientId,
                 authentication.options.userName,
-                  authentication.options.password
+                authentication.options.password
               );
               break;
             case 'azure-active-directory-msi-vm':
@@ -3477,7 +3477,7 @@ Connection.prototype.STATE = {
               credentials = new ClientSecretCredential(
                 authentication.options.tenantId,
                 authentication.options.clientId,
-                  authentication.options.clientSecret
+                authentication.options.clientSecret
               );
               break;
           }
@@ -3675,7 +3675,7 @@ Connection.prototype.STATE = {
         await once(tokenStreamParser, 'end');
         // 3.2.5.7 Sent Attention State
         // Discard any data contained in the response, until we receive the attention response
-          if (handler.attentionReceived) {
+        if (handler.attentionReceived) {
           this.clearCancelTimer();
 
           const sqlRequest = this.request!;
@@ -3685,7 +3685,7 @@ Connection.prototype.STATE = {
           if (sqlRequest.error && sqlRequest.error instanceof RequestError && sqlRequest.error.code === 'ETIMEOUT') {
             sqlRequest.callback(sqlRequest.error);
           } else {
-              sqlRequest.callback(new RequestError('Canceled.', 'ECANCEL'));
+            sqlRequest.callback(new RequestError('Canceled.', 'ECANCEL'));
           }
         }
 
