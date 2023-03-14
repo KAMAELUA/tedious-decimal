@@ -61,7 +61,7 @@ function readBit(parser: Parser, callback: (value: unknown) => void) {
   });
 }
 
-function valueParse(parser: Parser, metadata: Metadata, options: InternalConnectionOptions, callback: (value: unknown) => void): void {
+function valueParse(parser: Parser, metadata: Metadata, options: ParserOptions, callback: (value: unknown) => void): void {
   const type = metadata.type;
 
   switch (type.name) {
@@ -316,7 +316,7 @@ function valueParse(parser: Parser, metadata: Metadata, options: InternalConnect
         if (dataLength === 0) {
           return callback(null);
         } else {
-          return readNumeric(parser, dataLength!, metadata.precision!, metadata.scale!, options, callback);
+          return readNumeric(parser, dataLength!, metadata.precision!, metadata.scale!, callback);
         }
       });
 
@@ -357,11 +357,11 @@ function readUniqueIdentifier(parser: Parser, options: ParserOptions, callback: 
   });
 }
 
-function readNumeric(parser: Parser, dataLength: number, _precision: number, scale: number, options: InternalConnectionOptions, callback: (value: unknown) => void) {
+function readNumeric(parser: Parser, dataLength: number, _precision: number, scale: number, callback: (value: unknown) => void) {
   parser.readUInt8((sign) => {
     sign = sign === 1 ? 1 : -1;
 
-    if (options.returnDecimalAndNumericAsString) {
+    if ((parser.options as InternalConnectionOptions).returnDecimalAndNumericAsString) {
       let readValue;
 
       if (dataLength === 5) {
@@ -380,7 +380,7 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
         const left = value.slice(0, idx);
         let right = value.slice(idx);
 
-        if (options.decimalStringTrimTrailingZero) {
+        if ((parser.options as InternalConnectionOptions).decimalStringTrimTrailingZero) {
           for (let i = right.length - 1; i >= 0; i--) {
             if (right[i] === '0') {
               right = right.substring(0, i);
@@ -418,7 +418,7 @@ function readNumeric(parser: Parser, dataLength: number, _precision: number, sca
   });
 }
 
-function readVariant(parser: Parser, options: InternalConnectionOptions, dataLength: number, callback: (value: unknown) => void) {
+function readVariant(parser: Parser, options: ParserOptions, dataLength: number, callback: (value: unknown) => void) {
   return parser.readUInt8((baseType) => {
     const type = TYPE[baseType];
 
@@ -490,7 +490,7 @@ function readVariant(parser: Parser, options: InternalConnectionOptions, dataLen
         case 'DecimalN':
           return parser.readUInt8((precision) => {
             parser.readUInt8((scale) => {
-              readNumeric(parser, dataLength, precision, scale, options, callback);
+              readNumeric(parser, dataLength, precision, scale, callback);
             });
           });
 
