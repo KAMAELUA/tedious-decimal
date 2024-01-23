@@ -26,7 +26,7 @@ See the [changelog](https://github.com/tediousjs/tedious/releases) for version h
 
 Node.js is a prerequisite for installing tedious. Once you have installed [Node.js](https://nodejs.org/), installing tedious is simple:
 
-    npm install tedious
+    npm install tedious-decimal
 
 ## Getting Started
 - [Node.js + macOS](https://www.microsoft.com/en-us/sql-server/developer-get-started/node/mac/)
