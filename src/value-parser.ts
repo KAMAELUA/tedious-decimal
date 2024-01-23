@@ -5,7 +5,24 @@ import { TYPE } from './data-type';
 import iconv from 'iconv-lite';
 import { sprintf } from 'sprintf-js';
 import { bufferToLowerCaseGuid, bufferToUpperCaseGuid } from './guid-parser';
-import { NotEnoughDataError, Result, readBigInt64LE, readDoubleLE, readFloatLE, readInt16LE, readInt32LE, readUInt16LE, readUInt32LE, readUInt8, readUInt24LE, readUInt40LE, readUNumeric64LE, readUNumeric96LE, readUNumeric128LE } from './token/helpers';
+import {
+  NotEnoughDataError,
+  Result,
+  readBigInt64LE,
+  readDoubleLE,
+  readFloatLE,
+  readInt16LE,
+  readInt32LE,
+  readUInt16LE,
+  readUInt32LE,
+  readUInt8,
+  readUInt24LE,
+  readUInt40LE,
+  readUNumeric64LE,
+  readUNumeric96LE,
+  readUNumeric128LE,
+  readUNumeric64LEBI, readLEBytesAsString
+} from './token/helpers';
 
 const NULL = (1 << 16) - 1;
 const MAX = (1 << 16) - 1;
@@ -359,7 +376,7 @@ function readValue(buf: Buffer, offset: number, metadata: Metadata, options: Par
         return new Result(null, offset);
       }
 
-      return readNumeric(buf, offset, dataLength, metadata.precision!, metadata.scale!);
+      return readNumeric(buf, offset, dataLength, metadata.precision!, metadata.scale!, options);
     }
 
     case 'UniqueIdentifier': {
@@ -420,26 +437,62 @@ function readUniqueIdentifier(buf: Buffer, offset: number, options: ParserOption
   return new Result(options.lowerCaseGuids ? bufferToLowerCaseGuid(data) : bufferToUpperCaseGuid(data), offset);
 }
 
-function readNumeric(buf: Buffer, offset: number, dataLength: number, _precision: number, scale: number): Result<number> {
+function readNumeric(buf: Buffer, offset: number, dataLength: number, _precision: number, scale: number, options: ParserOptions): Result<number | string> {
   let sign;
   ({ offset, value: sign } = readUInt8(buf, offset));
 
   sign = sign === 1 ? 1 : -1;
 
-  let value;
-  if (dataLength === 5) {
-    ({ offset, value } = readUInt32LE(buf, offset));
-  } else if (dataLength === 9) {
-    ({ offset, value } = readUNumeric64LE(buf, offset));
-  } else if (dataLength === 13) {
-    ({ offset, value } = readUNumeric96LE(buf, offset));
-  } else if (dataLength === 17) {
-    ({ offset, value } = readUNumeric128LE(buf, offset));
-  } else {
-    throw new Error(sprintf('Unsupported numeric dataLength %d', dataLength));
-  }
+  if (options.returnDecimalAndNumericAsString) {
+    let value;
+    if (dataLength === 5) {
+      ({ offset, value } = readUInt32LE(buf, offset));
+    } else if (dataLength === 9) {
+      ({ offset, value } = readUNumeric64LEBI(buf, offset));
+    } else {
+      ({ offset, value } = readLEBytesAsString(buf, offset, dataLength - 1));
+    }
 
-  return new Result((value * sign) / Math.pow(10, scale), offset);
+    value = value.toString();
+    value = value.padStart(scale + 1, '0');
+    const idx = value.length - scale;
+
+    const left = value.slice(0, idx);
+    let right = value.slice(idx);
+
+    if (options.decimalStringTrimTrailingZero) {
+      for (let i = right.length - 1; i >= 0; i--) {
+        if (right[i] === '0') {
+          right = right.substring(0, i);
+        } else {
+          break;
+        }
+      }
+
+      value = right.length ? left + '.' + right : left;
+    } else {
+      value = left + '.' + right;
+    }
+
+    if (sign === -1) value = '-' + value;
+
+    return new Result(value, offset);
+  } else {
+    let value;
+    if (dataLength === 5) {
+      ({ offset, value } = readUInt32LE(buf, offset));
+    } else if (dataLength === 9) {
+      ({ offset, value } = readUNumeric64LE(buf, offset));
+    } else if (dataLength === 13) {
+      ({ offset, value } = readUNumeric96LE(buf, offset));
+    } else if (dataLength === 17) {
+      ({ offset, value } = readUNumeric128LE(buf, offset));
+    } else {
+      throw new Error(sprintf('Unsupported numeric dataLength %d', dataLength));
+    }
+
+    return new Result((value * sign) / Math.pow(10, scale), offset);
+  }
 }
 
 function readVariant(buf: Buffer, offset: number, options: ParserOptions, dataLength: number): Result<unknown> {
@@ -530,7 +583,7 @@ function readVariant(buf: Buffer, offset: number, options: ParserOptions, dataLe
       let scale;
       ({ value: scale, offset } = readUInt8(buf, offset));
 
-      return readNumeric(buf, offset, dataLength, precision, scale);
+      return readNumeric(buf, offset, dataLength, precision, scale, options);
     }
 
     case 'VarChar':

@@ -1,3 +1,5 @@
+import { convertLEBytesToString } from '../tracking-buffer/bigint';
+
 export class Result<T> {
   declare value: T;
   declare offset: number;
@@ -95,6 +97,18 @@ export function readInt32LE(buf: Buffer, offset: number): Result<number> {
   }
 
   return new Result(buf.readInt32LE(offset), offset + 4);
+}
+
+export function readLEBytesAsString(buf: Buffer, offset: number, length: number): Result<string> {
+  offset = +offset;
+
+  if (buf.length < offset + length) {
+    throw new NotEnoughDataError(offset + length);
+  }
+
+  buf.slice(offset, offset + length);
+
+  return new Result<string>(convertLEBytesToString(buf), offset + length);
 }
 
 export function readBigUInt64LE(buf: Buffer, offset: number): Result<bigint> {
@@ -204,6 +218,18 @@ export function readUNumeric64LE(buf: Buffer, offset: number): Result<number> {
   const high = buf.readUInt32LE(offset + 4);
 
   return new Result((0x100000000 * high) + low, offset + 8);
+}
+
+export function readUNumeric64LEBI(buf: Buffer, offset: number): Result<bigint> {
+  offset = +offset;
+
+  if (buf.length < offset + 8) {
+    throw new NotEnoughDataError(offset + 8);
+  }
+
+  const data = buf.readBigUInt64LE(offset);
+
+  return new Result<bigint>(data, offset + 8);
 }
 
 export function readUNumeric96LE(buf: Buffer, offset: number): Result<number> {

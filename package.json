@@ -10,9 +10,10 @@
     "lastonesky",
     "Patrik Simek <patrik@patriksimek.cz>",
     "Phil Dodderidge <pdodde@poyntz.com>",
-    "Zach Aller"
+    "Zach Aller",
+    "Andrey Chugay <kamaelua@gmail.com"
   ],
-  "name": "tedious",
+  "name": "tedious-decimal",
   "description": "A TDS driver, for connecting to MS SQLServer databases.",
   "keywords": [
     "sql",
@@ -24,14 +25,14 @@
     "msnodesql",
     "azure"
   ],
-  "homepage": "https://github.com/tediousjs/tedious",
-  "bugs": "https://github.com/tediousjs/tedious/issues",
+  "homepage": "https://github.com/KAMAELUA/tedious-decimal",
+  "bugs": "https://github.com/KAMAELUA/tedious-decimal/issues",
   "license": "MIT",
   "version": "0.0.0-dev",
   "main": "./lib/tedious.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tediousjs/tedious.git"
+    "url": "https://github.com/KAMAELUA/tedious-decimal.git"
   },
   "engines": {
     "node": ">=16"
@@ -75,6 +76,8 @@
     "babel-plugin-istanbul": "^6.1.1",
     "chai": "^4.3.7",
     "codecov": "^3.8.3",
+    "copyfiles": "^2.4.1",
+    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.45.0",
     "mitm": "^1.7.2",
     "mocha": "^10.2.0",
@@ -92,7 +95,7 @@
     "test-integration": "mocha test/integration/",
     "test-all": "mocha test/unit/ test/unit/token/ test/unit/tracking-buffer test/integration/",
     "build": "rimraf lib && babel src --out-dir lib --extensions .js,.ts",
-    "prepublish": "npm run build",
+    "prepublish": "npm run build && tsc && copyfiles -u 2 temp/src/*.d.ts lib && rimraf temp",
     "semantic-release": "semantic-release"
   },
   "babel": {
@@ -139,5 +142,10 @@
     "extension": [
       ".ts"
     ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

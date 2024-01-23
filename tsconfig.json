@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "esnext",
     "moduleResolution": "node",
+    "emitDeclarationOnly": true,
     "allowJs": true,
-    "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -11,7 +11,9 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "exactOptionalPropertyTypes": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "declaration": true,
+    "outDir": "temp"
   },
 
   "include": [

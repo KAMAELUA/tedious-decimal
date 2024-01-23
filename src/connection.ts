@@ -393,6 +393,8 @@ export interface InternalConnectionOptions {
   useUTC: boolean;
   workstationId: undefined | string;
   lowerCaseGuids: boolean;
+  returnDecimalAndNumericAsString: boolean;
+  decimalStringTrimTrailingZero: boolean;
 }
 
 interface KeyStoreProviderMap {
@@ -676,6 +678,20 @@ export interface ConnectionOptions {
    * (default: `true`)
    */
   encrypt?: string | boolean;
+
+  /**
+   * If true, numeric will be serialized as string.
+   *
+   * (default: `false`)
+   */
+  returnDecimalAndNumericAsString?: boolean;
+
+  /**
+   * If true, trailing zero in numeric will be removed.
+   *
+   * (default: `false`)
+   */
+  decimalStringTrimTrailingZero?: boolean;
 
   /**
    * By default, if the database requested by [[database]] cannot be accessed,
@@ -1262,6 +1278,8 @@ class Connection extends EventEmitter {
         enableNumericRoundabort: false,
         enableQuotedIdentifier: true,
         encrypt: true,
+        returnDecimalAndNumericAsString: false,
+        decimalStringTrimTrailingZero: false,
         fallbackToDefaultDb: false,
         encryptionKeyStoreProviders: undefined,
         instanceName: undefined,
@@ -1505,6 +1523,23 @@ class Connection extends EventEmitter {
 
         this.config.options.enableQuotedIdentifier = config.options.enableQuotedIdentifier;
       }
+
+      if (config.options.returnDecimalAndNumericAsString !== undefined) {
+        if (typeof config.options.returnDecimalAndNumericAsString !== 'boolean') {
+          throw new TypeError('options.returnDecimalAndNumericAsString must be a boolean (true or false).');
+        }
+
+        this.config.options.returnDecimalAndNumericAsString = config.options.returnDecimalAndNumericAsString;
+      }
+
+      if (config.options.decimalStringTrimTrailingZero !== undefined) {
+        if (typeof config.options.decimalStringTrimTrailingZero !== 'boolean') {
+          throw new TypeError('options.decimalStringTrimTrailingZero must be a boolean (true or false).');
+        }
+
+        this.config.options.decimalStringTrimTrailingZero = config.options.decimalStringTrimTrailingZero;
+      }
+
       if (config.options.encrypt !== undefined) {
         if (typeof config.options.encrypt !== 'boolean') {
           if (config.options.encrypt !== 'strict') {
@@ -1706,6 +1741,14 @@ class Connection extends EventEmitter {
         }
 
         this.config.options.lowerCaseGuids = config.options.lowerCaseGuids;
+      }
+
+      if (config.options?.returnDecimalAndNumericAsString !== undefined) {
+        if (typeof config.options.returnDecimalAndNumericAsString !== 'boolean') {
+          throw new TypeError('The "config.options.returnDecimalAndNumericAsString" property must be of type boolean.');
+        }
+
+        this.config.options.returnDecimalAndNumericAsString = config.options.returnDecimalAndNumericAsString;
       }
     }
 
