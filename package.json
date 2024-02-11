@@ -35,7 +35,7 @@
     "url": "https://github.com/KAMAELUA/tedious-decimal.git"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "publishConfig": {
     "tag": "next"
@@ -107,7 +107,7 @@
         "@babel/preset-env",
         {
           "targets": {
-            "node": 16
+            "node": 18
           }
         }
       ],
