@@ -10,9 +10,10 @@
     "lastonesky",
     "Patrik Simek <patrik@patriksimek.cz>",
     "Phil Dodderidge <pdodde@poyntz.com>",
-    "Zach Aller"
+    "Zach Aller",
+    "Andrey Chugay <kamaelua@gmail.com"
   ],
-  "name": "tedious",
+  "name": "tedious-decimal",
   "description": "A TDS driver, for connecting to MS SQLServer databases.",
   "keywords": [
     "sql",
