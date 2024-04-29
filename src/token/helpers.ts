@@ -106,9 +106,9 @@ export function readLEBytesAsString(buf: Buffer, offset: number, length: number)
     throw new NotEnoughDataError(offset + length);
   }
 
-  buf.slice(offset, offset + length);
+  const target = buf.subarray(offset, offset + length);
 
-  return new Result<string>(convertLEBytesToString(buf), offset + length);
+  return new Result<string>(convertLEBytesToString(target), offset + length);
 }
 
 export function readBigUInt64LE(buf: Buffer, offset: number): Result<bigint> {
